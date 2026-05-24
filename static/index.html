@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review Assistant - First-Pass AI Auditor</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Prism.js CSS (Tomorrow Night Dark) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand-header">
+                <div class="logo-icon">
+                    <i data-lucide="shield-check"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>AI Auditor</h2>
+                    <span>Review Assistant</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="pr-reviewer">
+                    <i data-lucide="git-pull-request"></i>
+                    <span>PR Reviewer</span>
+                    <span class="badge badge-pulse">3</span>
+                </button>
+                <button class="nav-item" data-tab="sandbox">
+                    <i data-lucide="terminal"></i>
+                    <span>Sandbox Play</span>
+                </button>
+                <button class="nav-item" data-tab="analytics">
+                    <i data-lucide="line-chart"></i>
+                    <span>Model Analytics</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="model-pill">
+                    <div class="status-indicator"></div>
+                    <div class="model-info">
+                        <p class="model-name">AI Classifier</p>
+                        <p class="model-status">Active Session</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header Bar -->
+            <header class="top-bar">
+                <div class="search-container">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search code repositories, reviews or audit IDs...">
+                </div>
+                <div class="user-profile">
+                    <div class="repo-selector-wrapper">
+                        <select id="active-repo-select" class="premium-select">
+                            <option value="" disabled selected>Select Repository</option>
+                        </select>
+                    </div>
+                    <div class="avatar">OK</div>
+                </div>
+            </header>
+
+            <!-- TAB CONTROLLER WRAPPER -->
+            <div class="tab-viewport">
+                
+                <!-- TAB 1: DASHBOARD -->
+                <section id="dashboard" class="tab-panel active">
+                    <div class="section-header">
+                        <div>
+                            <h1>Operational Overview</h1>
+                            <p class="subtitle">Real-time status of automated pull request reviews and classified anti-patterns.</p>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn btn-primary" id="btn-import-repo"><i data-lucide="folder-plus"></i> Import Repo</button>
+                            <button class="btn btn-secondary" id="btn-sync-repos"><i data-lucide="refresh-cw"></i> Sync Repos</button>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card glass">
+                            <div class="metric-icon primary">
+                                <i data-lucide="git-commit"></i>
+                            </div>
+                            <div class="metric-data">
+                                <h3 id="stat-scanned">80,000+</h3>
+                                <p>PR Diffs Scanned</p>
+                            </div>
+                            <div class="metric-trend success">
+                                <i data-lucide="trending-up"></i>
+                                <span>Training Set</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass">
+                            <div class="metric-icon warning">
+                                <i data-lucide="alert-triangle"></i>
+                            </div>
+                            <div class="metric-data">
+                                <h3 id="stat-precision">73.0%</h3>
+                                <p>Recall Rate</p>
+                            </div>
+                            <div class="metric-trend success">
+                                <i data-lucide="check"></i>
+                                <span>Anti-patterns Flagged</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass">
+                            <div class="metric-icon danger">
+                                <i data-lucide="bug"></i>
+                            </div>
+                            <div class="metric-data">
+                                <h3 id="stat-fpr">&lt; 8.0%</h3>
+                                <p>False Positive Rate</p>
+                            </div>
+                            <div class="metric-trend success">
+                                <i data-lucide="trending-down"></i>
+                                <span>High Precision</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass">
+                            <div class="metric-icon success">
+                                <i data-lucide="zap"></i>
+                            </div>
+                            <div class="metric-data">
+                                <h3 id="stat-time">240ms</h3>
+                                <p>Average Scan Latency</p>
+                            </div>
+                            <div class="metric-trend success">
+                                <i data-lucide="zap-fast"></i>
+                                <span>Real-time</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Repository Layout & Recent Audits -->
+                    <div class="dashboard-layout">
+                        <!-- Left Panel: Active Pull Requests -->
+                        <div class="card glass pr-list-card">
+                            <div class="card-header">
+                                <h2>Pending Pull Requests</h2>
+                                <span class="badge warning" id="pending-pr-count">3 Active</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="pr-list-container" id="dashboard-pr-list">
+                                    <!-- Dynamic PR Items -->
+                                    <div class="loading-state">
+                                        <div class="spinner"></div>
+                                        <p>Fetching repositories and pull request queues...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Vulnerability Analytics -->
+                        <div class="card glass ant-pattern-card">
+                            <div class="card-header">
+                                <h2>Anti-Pattern Breakdown</h2>
+                                <p class="card-subtitle">80K PR training set distribution</p>
+                            </div>
+                            <div class="card-body chart-wrapper">
+                                <canvas id="dashboardPatternChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: PR REVIEWER -->
+                <section id="pr-reviewer" class="tab-panel">
+                    <div class="section-header">
+                        <div>
+                            <h1 id="pr-title-header">Select a PR to Review</h1>
+                            <p class="subtitle" id="pr-subtitle-header">Choose a pull request from the queue to run automated AI auditing.</p>
+                        </div>
+                        <div class="action-row" id="pr-actions" style="display: none;">
+                            <span class="branch-tag" id="pr-branch-name"><i data-lucide="git-branch"></i> feature/branch</span>
+                            <button class="btn btn-secondary" id="btn-export-report" style="display: none;"><i data-lucide="download"></i> Export Report</button>
+                            <button class="btn btn-primary" id="btn-run-review"><i data-lucide="shield-alert"></i> Run AI Auditor</button>
+                        </div>
+                    </div>
+
+                    <!-- Split layout for PRs -->
+                    <div class="pr-reviewer-layout">
+                        <!-- Sidebar: Files and PR Info -->
+                        <div class="pr-files-sidebar card glass">
+                            <div class="card-header">
+                                <h3>Changed Files</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="file-list" id="pr-file-list">
+                                    <!-- Files populated dynamically -->
+                                    <div class="empty-state">
+                                        <i data-lucide="file-text"></i>
+                                        <p>Please select a pull request to view changed files.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main: Diff Viewer -->
+                        <div class="pr-diff-viewer card glass">
+                            <div class="diff-header" id="diff-header-bar">
+                                <div class="file-info">
+                                    <i data-lucide="code"></i>
+                                    <span id="active-file-path">No File Selected</span>
+                                </div>
+                                <div class="diff-views-toggles">
+                                    <span class="badge success" id="file-diff-stats">+0 -0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="diff-content-wrapper" id="diff-viewport">
+                                <!-- Dynamic diff or loading -->
+                                <div class="empty-state">
+                                    <i data-lucide="git-pull-request"></i>
+                                    <h3>Unified Review Sandbox</h3>
+                                    <p>Select a file from the left sidebar to audit and view diff comments.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: SANDBOX PLAYGROUND -->
+                <section id="sandbox" class="tab-panel">
+                    <div class="section-header">
+                        <div>
+                            <h1>Model Playground & Sandbox</h1>
+                            <p class="subtitle">Input custom code or choose sample templates to test the AI classifier.</p>
+                        </div>
+                    </div>
+
+                    <div class="sandbox-layout">
+                        <!-- Left Block: Code inputs -->
+                        <div class="sandbox-editor-panel card glass">
+                            <div class="editor-header">
+                                <div class="selector-pair">
+                                    <label for="sandbox-sample-select">Load Template:</label>
+                                    <select id="sandbox-sample-select" class="premium-select">
+                                        <option value="resource_leak">Resource Leak (File descriptor unclosed)</option>
+                                        <option value="sql_injection">SQL Injection (String Concatenation)</option>
+                                        <option value="race_condition">Race Condition (Thread unsafe list)</option>
+                                        <option value="bare_exception">Silent Failure (Bare Except: pass)</option>
+                                        <option value="insecure_deserialization">Unsafe Deserialization (pickle.loads)</option>
+                                        <option value="clean_code">Clean Code (Optimized & Secure)</option>
+                                    </select>
+                                </div>
+                                <div class="action-pair">
+                                    <button class="btn btn-secondary" id="btn-clear-sandbox"><i data-lucide="trash-2"></i> Clear</button>
+                                    <button class="btn btn-primary" id="btn-scan-sandbox"><i data-lucide="play"></i> Analyze Code</button>
+                                </div>
+                            </div>
+                            
+                            <div class="editor-body">
+                                <textarea id="sandbox-code-editor" spellcheck="false" placeholder="Write or paste your Python code here..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Right Block: Results & Console logs -->
+                        <div class="sandbox-results-panel">
+                            <!-- Shell Console Output -->
+                            <div class="card terminal-card">
+                                <div class="terminal-header">
+                                    <div class="terminal-dots">
+                                        <span class="dot red"></span>
+                                        <span class="dot yellow"></span>
+                                        <span class="dot green"></span>
+                                    </div>
+                                    <span class="terminal-title">AI Inference logs</span>
+                                </div>
+                                <div class="terminal-body" id="sandbox-console">
+                                    <div class="console-line system">> AI Review Playground ready.</div>
+                                    <div class="console-line system">> Select a template or write custom code and press "Analyze Code".</div>
+                                </div>
+                            </div>
+
+                            <!-- Inline Reviews container -->
+                            <div class="card glass review-output-card">
+                                <div class="card-header">
+                                    <h2>Audit Findings</h2>
+                                    <span class="badge success" id="findings-count-badge">0 Issues</span>
+                                </div>
+                                <div class="card-body" id="sandbox-findings-container">
+                                    <div class="empty-state">
+                                        <i data-lucide="check-circle-2"></i>
+                                        <p>No issues found. Code is secure or pending analysis.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: MODEL ANALYTICS -->
+                <section id="analytics" class="tab-panel">
+                    <div class="section-header">
+                        <div>
+                            <h1>Model Analytics & Fine-Tuning Performance</h1>
+                            <p class="subtitle">Detailed evaluation metrics of the model trained on 80,000 pull request diffs.</p>
+                        </div>
+                    </div>
+
+                    <div class="analytics-layout">
+                        <!-- KPI Row -->
+                        <div class="kpi-row">
+                            <div class="kpi-card glass">
+                                <span>Training Set</span>
+                                <h2>80,000 PRs</h2>
+                                <p>64,000 Train / 16,000 Val</p>
+                            </div>
+                            <div class="kpi-card glass">
+                                <span>Anti-Pattern Recall</span>
+                                <h2 class="text-cyan">73.0%</h2>
+                                <p>Vulnerabilities flagged successfully</p>
+                            </div>
+                            <div class="kpi-card glass">
+                                <span>False Positive Rate</span>
+                                <h2 class="text-rose">&lt; 8.0%</h2>
+                                <p>Industry leading precision</p>
+                            </div>
+                            <div class="kpi-card glass">
+                                <span>Inference Time</span>
+                                <h2 class="text-purple">240ms</h2>
+                                <p>Highly optimized latency</p>
+                            </div>
+                        </div>
+
+                        <!-- Graph Grid Row 1 -->
+                        <div class="charts-grid-row">
+                            <!-- Training and validation loss -->
+                            <div class="chart-card card glass">
+                                <div class="card-header">
+                                    <h3>Training & Validation Loss</h3>
+                                    <p class="card-subtitle">Convergence over 5 Epochs</p>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="lossChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Precision-Recall Curve -->
+                            <div class="chart-card card glass">
+                                <div class="card-header">
+                                    <h3>Precision-Recall (PR) Curve</h3>
+                                    <p class="card-subtitle">Precision vs Recall tradeoff</p>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="prCurveChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Graph Grid Row 2 -->
+                        <div class="charts-grid-row">
+                            <!-- ROC AUC Curve -->
+                            <div class="chart-card card glass">
+                                <div class="card-header">
+                                    <h3>ROC Curve (AUC: 0.91)</h3>
+                                    <p class="card-subtitle">True Positive Rate vs False Positive Rate</p>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="rocChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Dataset Breakdown Table -->
+                            <div class="chart-card card glass table-card">
+                                <div class="card-header">
+                                    <h3>Dataset Classification Overview</h3>
+                                    <p class="card-subtitle">Binary classification metrics on 16K validation samples</p>
+                                </div>
+                                <div class="card-body">
+                                    <table class="premium-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Metric</th>
+                                                <th>Value</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>True Positive (TP)</td>
+                                                <td><span class="table-badge success">11,680</span></td>
+                                                <td>Known anti-patterns correctly flagged</td>
+                                            </tr>
+                                            <tr>
+                                                <td>False Positive (FP)</td>
+                                                <td><span class="table-badge danger">1,280</span></td>
+                                                <td>Clean lines incorrectly flagged as bugs</td>
+                                            </tr>
+                                            <tr>
+                                                <td>True Negative (TN)</td>
+                                                <td><span class="table-badge secondary">14,720</span></td>
+                                                <td>Clean lines correctly identified</td>
+                                            </tr>
+                                            <tr>
+                                                <td>False Negative (FN)</td>
+                                                <td><span class="table-badge warning">4,320</span></td>
+                                                <td>Anti-patterns missed by the first-pass auditor</td>
+                                            </tr>
+                                            <tr class="table-highlight">
+                                                <td>Overall Accuracy</td>
+                                                <td><strong>82.5%</strong></td>
+                                                <td>Percentage of correct predictions</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Beautiful Glassmorphic Import Repo Modal -->
+    <div id="import-repo-modal" class="modal-overlay">
+        <div class="modal-content glass animate-slide-up">
+            <div class="modal-header">
+                <h2><i data-lucide="folder-plus" style="color: var(--color-primary); vertical-align: middle; margin-right: 0.5rem; width: 22px; height: 22px; display: inline-block;"></i>Import Custom Repository</h2>
+                <button class="btn-close-modal" id="btn-close-modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Import a custom Python or JavaScript file to perform real-time structural and safety audits using the AI Auditor engine.</p>
+                
+                <form id="import-repo-form">
+                    <div class="form-group">
+                        <label for="modal-repo-name">Repository Name</label>
+                        <input type="text" id="modal-repo-name" placeholder="e.g. payments-processing-handler" required>
+                    </div>
+                    
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="modal-repo-lang">Primary Language</label>
+                            <select id="modal-repo-lang" class="premium-select" style="width: 100%; height: 42px;">
+                                <option value="Python">Python</option>
+                                <option value="JavaScript">JavaScript</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-file-name">Target File Path</label>
+                            <input type="text" id="modal-file-name" placeholder="e.g. gateway/processor.py" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="modal-code-content">Source Code Content</label>
+                        <textarea id="modal-code-content" placeholder="Paste your vulnerable or production code here..." required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i data-lucide="sparkles"></i> Create & Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prism.js core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <!-- Prism.js Python language support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
