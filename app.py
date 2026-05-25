@@ -601,7 +601,8 @@ def get_metrics():
 # Serve standard index.html directly from static root
 @app.get("/", response_class=HTMLResponse)
 def serve_index():
-    index_path = os.path.join("static", "index.html")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    index_path = os.path.join(base_dir, "static", "index.html")
     if not os.path.exists(index_path):
         # Empty placeholder state if file is not created yet
         return "<html><body><h2>LLM Code Review Assistant Frontend is loading...</h2></body></html>"
@@ -609,7 +610,8 @@ def serve_index():
         return f.read()
 
 # Mount static folder
-app.mount("/static", StaticFiles(directory="static"), name="static")
+base_dir = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(base_dir, "static")), name="static")
 
 if __name__ == "__main__":
     import uvicorn
