@@ -479,7 +479,7 @@ body {
 /* TAB 1: DASHBOARD STYLING */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
@@ -488,9 +488,11 @@ body {
     display: flex;
     align-items: center;
     padding: 1.5rem;
+    padding-right: 2rem;
     gap: 1.25rem;
     position: relative;
     overflow: hidden;
+    min-height: 90px;
 }
 
 .metric-card::after {
@@ -540,6 +542,11 @@ body {
     color: var(--color-success);
 }
 
+.metric-data {
+    flex: 1;
+    min-width: 0;
+}
+
 .metric-data h3 {
     font-size: 1.75rem;
     font-weight: 700;
@@ -551,21 +558,32 @@ body {
     font-size: 0.85rem;
     color: var(--text-secondary);
     font-weight: 500;
+    white-space: nowrap;
 }
 
 .metric-trend {
     position: absolute;
-    top: 1rem;
-    right: 1.25rem;
+    top: 0.75rem;
+    right: 0.75rem;
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.725rem;
+    font-size: 0.65rem;
     font-weight: 600;
     padding: 0.15rem 0.4rem;
     border-radius: 6px;
     background: rgba(16, 185, 129, 0.1);
     color: var(--color-success);
+    white-space: nowrap;
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-trend i {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
 }
 
 .dashboard-layout {
@@ -1030,6 +1048,8 @@ body {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     background: rgba(255, 255, 255, 0.02);
+    flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .selector-pair {
@@ -1047,6 +1067,7 @@ body {
 .action-pair {
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .editor-body {
