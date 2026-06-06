@@ -339,7 +339,7 @@ async def decode_session_token(request: Request):
 +        pass""",
                     "reviews": [
                         {
-                            "line": 15,
+                            "line": 14,
                             "severity": "warning",
                             "anti_pattern_type": "Bare Exception / Silent Failure",
                             "confidence": 0.91,
@@ -457,7 +457,7 @@ def run_concurrent_downloads(urls):
 +        download_logs.append(f"Segment {index} - Failed {response.status_code}")""",
                     "reviews": [
                         {
-                            "line": 10,
+                            "line": 11,
                             "severity": "warning",
                             "anti_pattern_type": "Race Condition / Thread-Unsafe Modify",
                             "confidence": 0.87,

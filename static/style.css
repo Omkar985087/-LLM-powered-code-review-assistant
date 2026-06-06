@@ -715,6 +715,10 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
 .chart-wrapper {
     height: 300px;
     display: flex;

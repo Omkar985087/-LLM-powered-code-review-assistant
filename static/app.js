@@ -1015,12 +1015,32 @@ def get_user_records(user_id: str):
     }
 
     // --- IMPORT REPOSITORY MODAL DIALOGS ---
+    const btnSyncRepos = document.getElementById("btn-sync-repos");
     const btnImportRepo = document.getElementById("btn-import-repo");
     const importRepoModal = document.getElementById("import-repo-modal");
     const btnCloseModal = document.getElementById("btn-close-modal");
     const btnCancelModal = document.getElementById("btn-cancel-modal");
     const importRepoForm = document.getElementById("import-repo-form");
     const btnExportReport = document.getElementById("btn-export-report");
+
+    if (btnSyncRepos) {
+        btnSyncRepos.addEventListener("click", async () => {
+            const syncIcon = btnSyncRepos.querySelector("i");
+            if (syncIcon) syncIcon.classList.add("animate-spin");
+            btnSyncRepos.disabled = true;
+
+            try {
+                await loadRepositories();
+                // Brief visual delay to make the sync feel interactive
+                await new Promise(resolve => setTimeout(resolve, 800));
+            } catch (error) {
+                console.error("Sync failed:", error);
+            } finally {
+                if (syncIcon) syncIcon.classList.remove("animate-spin");
+                btnSyncRepos.disabled = false;
+            }
+        });
+    }
 
     function openImportModal() {
         importRepoModal.classList.add("active");
